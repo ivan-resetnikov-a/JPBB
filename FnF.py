@@ -55,5 +55,5 @@ class Game :
 if __name__ == '__main__' :
 	Game().run()
 
-	for song in core.filesAndFolders('core/temp/'):
-		core.deleteFolder(f'core/temp/{song}')
+	for song in core.filesAndFolders('songs/temp/'):
+		core.deleteFolder(f'songs/temp/{song}')

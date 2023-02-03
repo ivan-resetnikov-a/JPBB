@@ -2,21 +2,32 @@ import pygame as pg
 pg.font.init()
 pg.mixer.init()
 
-import pygame.gfxdraw
+try :
+	import pygame.gfxdraw
+
+	def draw_aacircle(surface, color, pos, radius):
+		# using gfxdraw to draw anti-anialised shapes
+		pg.gfxdraw.aacircle(surface, round(pos[0]), round(pos[1]), radius, color)
+		pg.gfxdraw.filled_circle(surface, round(pos[0]), round(pos[1]), radius, color)
+except ImportError :
+	def draw_aacircle(surface, color, pos, radius):
+		# using gfxdraw to draw anti-anialised shapes
+		pg.draw.circle(surface, color, pos, radius)
+
+from .file import loadFromINI
+
+
+config = loadFromINI('settings.ini')
+
+koyotTime = float(config['GAMEPLAY']['coyote_time_gap'])
 
 font = pg.font.SysFont('Arial', 100)
-
-hitSound = pg.mixer.Sound('assets/fnf/hit.wav')
-hitSound.set_volume(0.2)
-
-koyotTime = 20
-
 
 
 
 
 class Note :
-	def __init__ (self, color, side, speed) :
+	def __init__ (self, color, side, speed, hitSound) :
 		### image
 		self.color = [color[0], color[1], color[2]]
 
@@ -33,6 +44,9 @@ class Note :
 
 		self.letter = {0: 'D', 1: 'F', 2: 'J', 3: 'K'}[side - 1]
 		self.letter = font.render(self.letter, 1, self.outline)
+
+		### sound
+		self.hitSound = hitSound
 
 		### stats
 		self.key = {0: pg.K_d, 1: pg.K_f, 2: pg.K_j, 3: pg.K_k}[side - 1]
@@ -51,15 +65,11 @@ class Note :
 
 		if keys[self.key] and (self.y > (800 - koyotTime) and self.y < (800 + koyotTime)) :
 			self.hit = 1
-			hitSound.play()
+			self.hitSound.play()
 
 
 	def render (self, frame) :
-		# using gfxdraw to draw anti-anialised shapes
-		pg.gfxdraw.aacircle(frame, round(125 * (self.side + 0.5)), round(self.y), 60, self.outline)
-		pg.gfxdraw.filled_circle(frame, round(125 * (self.side + 0.5)), round(self.y), 60, self.outline)
-		
-		pg.gfxdraw.aacircle(frame, round(125 * (self.side + 0.5)), round(self.y), 55, self.color)
-		pg.gfxdraw.filled_circle(frame, round(125 * (self.side + 0.5)), round(self.y), 55, self.color)
+		draw_aacircle(frame, self.outline, (125 * (self.side + 0.5), self.y), 60)
+		draw_aacircle(frame, self.color,   (125 * (self.side + 0.5), self.y), 55)
 
 		frame.blit(self.letter, ((125 * (self.side + 0.5)) - 25, self.y - 55))

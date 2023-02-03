@@ -12,7 +12,7 @@ darkenBackground = 0
 class Song :
 	def __init__ (self, name) :
 		#### unzip song archieve
-		songPath = 'core/temp/'+name[:-4:]
+		songPath = 'songs/temp/'+name[:-4:]
 
 		newFolder(f'{songPath}/')
 		unZip(f'songs/{name}', f'{songPath}/')
@@ -47,18 +47,23 @@ class Song :
 		
 		self.time = 0
 
+		#### sound
 		pg.mixer.music.load(f'{songPath}/music.mp3')
+		pg.mixer.music.set_volume(content['music_volume'])
 		pg.mixer.music.play()
+
+		self.hitSound = pg.mixer.Sound(f'{songPath}/hit.wav')
+		self.hitSound.set_volume(content['hit_sound_volume'])
 
 
 	def update (self, dt) :
 		self.time += 1
 		for note in self.song :
 			if note['time'] == self.time :
-				try : noteSpeed = self.noteSpeed * note['speed']
-				except : noteSpeed = self.noteSpeed
+				try : noteSpeed = note['speed']
+				except KeyError : noteSpeed = self.noteSpeed
 
-				self.notes.append(Note(self.bgColor, note['side'], noteSpeed))
+				self.notes.append(Note(self.bgColor, note['side'], noteSpeed, self.hitSound))
 
 		toRemove = []
 		for note in self.notes :
