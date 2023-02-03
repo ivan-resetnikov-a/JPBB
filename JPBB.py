@@ -10,7 +10,7 @@ import core
 class Game :
 	def __init__ (self) :
 		#### config
-		self.size, self.title = (600, 900), 'FnF | V 1.0'
+		self.size, self.title = (600, 900), 'JPBB | V 1.0'
 		self.fps, self.timeMult = 60, 1
 
 		#### window
