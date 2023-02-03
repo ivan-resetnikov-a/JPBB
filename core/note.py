@@ -1,28 +1,18 @@
+import pygame.gfxdraw
 import pygame as pg
-pg.font.init()
-pg.mixer.init()
-
-try :
-	import pygame.gfxdraw
-
-	def draw_aacircle(surface, color, pos, radius):
-		# using gfxdraw to draw anti-anialised shapes
-		pg.gfxdraw.aacircle(surface, round(pos[0]), round(pos[1]), radius, color)
-		pg.gfxdraw.filled_circle(surface, round(pos[0]), round(pos[1]), radius, color)
-except ImportError :
-	def draw_aacircle(surface, color, pos, radius):
-		# using gfxdraw to draw anti-anialised shapes
-		pg.draw.circle(surface, color, pos, radius)
 
 from .file import loadFromINI
 
+settings = loadFromINI('settings.ini')
+koyotTime = float(settings['GAMEPLAY']['coyote_time_gap'])
 
-config = loadFromINI('settings.ini')
+font = pg.font.Font('font.ttf', 90)
 
-koyotTime = float(config['GAMEPLAY']['coyote_time_gap'])
 
-font = pg.font.SysFont('Arial', 100)
 
+def draw_aacircle(surface, color, pos, radius):
+	pg.gfxdraw.aacircle(surface, round(pos[0]), round(pos[1]), radius, color)
+	pg.gfxdraw.filled_circle(surface, round(pos[0]), round(pos[1]), radius, color)
 
 
 
@@ -42,7 +32,7 @@ class Note :
 
 		self.outline = color
 
-		self.letter = {0: 'D', 1: 'F', 2: 'J', 3: 'K'}[side - 1]
+		self.letter = {0: 'd', 1: ' f', 2: ' j', 3: 'k'}[side - 1]
 		self.letter = font.render(self.letter, 1, self.outline)
 
 		### sound
@@ -64,12 +54,12 @@ class Note :
 		keys = pg.key.get_pressed()
 
 		if keys[self.key] and (self.y > (800 - koyotTime) and self.y < (800 + koyotTime)) :
-			self.hit = 1
 			self.hitSound.play()
+			self.hit = 1
 
 
 	def render (self, frame) :
 		draw_aacircle(frame, self.outline, (125 * (self.side + 0.5), self.y), 60)
 		draw_aacircle(frame, self.color,   (125 * (self.side + 0.5), self.y), 55)
 
-		frame.blit(self.letter, ((125 * (self.side + 0.5)) - 25, self.y - 55))
+		frame.blit(self.letter, ((125 * (self.side + 0.5)) - 30, self.y - 70))

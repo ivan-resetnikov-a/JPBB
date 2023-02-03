@@ -1,11 +1,10 @@
 import pygame as pg
 
-from .file import unZip, loadFromJSON, writeToJSON, newFolder
+from .file import unZip, loadFromJSON, writeToJSON, newFolder, loadFromINI
 from .note import Note
 
-pg.mixer.init()
-
-darkenBackground = 0
+settings = loadFromINI('settings.ini')
+darkenBackground = float(settings['RENDER']['darken_background'])
 
 
 
@@ -27,6 +26,7 @@ class Song :
 		self.icon = pg.image.load(f'{songPath}/icon.png').convert_alpha()
 		self.bg   = pg.image.load(f'{songPath}/bg.png').convert_alpha()
 
+		#### get color palette from background
 		self.bgColor = list(pg.transform.average_color(self.bg))
 
 		self.bgColor[0] += 30
@@ -43,49 +43,63 @@ class Song :
 		#### song
 		self.board = pg.Surface((500, 900))
 
-		self.notes = []
-		
+		self.progress = 0
+
 		self.time = 0
+		self.notes = []
 
 		#### sound
-		pg.mixer.music.load(f'{songPath}/music.mp3')
-		pg.mixer.music.set_volume(content['music_volume'])
-		pg.mixer.music.play()
-
 		self.hitSound = pg.mixer.Sound(f'{songPath}/hit.wav')
 		self.hitSound.set_volume(content['hit_sound_volume'])
+
+		pg.mixer.music.load(f'{songPath}/music.mp3')
+		pg.mixer.music.set_volume(content['music_volume'])
+
+
+	def play (self) :
+		pg.mixer.music.play()
 
 
 	def update (self, dt) :
 		self.time += 1
-		for note in self.song :
+
+		#### add notes to scene
+		if len(self.song) > self.progress :
+			note = self.song[self.progress]
+
 			if note['time'] == self.time :
-				try : noteSpeed = note['speed']
-				except KeyError : noteSpeed = self.noteSpeed
+				self.progress += 1
+
+				# custom note speed
+				if 'speed' in note : noteSpeed = note['speed']
+				else : noteSpeed = self.noteSpeed
 
 				self.notes.append(Note(self.bgColor, note['side'], noteSpeed, self.hitSound))
 
-		toRemove = []
+		#### update each note
+		toRemove = [] # used to fix skiped iteration issue
 		for note in self.notes :
 			note.update(dt)
 			if note.hit :
 				toRemove.append(note)
 
+		#### remove notes
 		for note in toRemove : self.notes.remove(note)
 
 
 	def render (self, frame) :
+		#### fill with average color
 		frame.fill(self.bgColor)
 
+		#### render background image
 		self.board.blit(self.bg, (0, 0))
 
-		x = 1
-		for _ in range(4) :
-			pg.draw.line(self.board, self.bgColor, (125 * x, 0), (125 * x, 900), 1)
-			x += 1
+		#### draw border lines
+		for x in range(1, 4) : pg.draw.line(self.board, self.bgColor, (125 * x, 0), (125 * x, 900), 1)
 
 		pg.draw.line(self.board, self.bgColor, (0, 800), (500, 800), 5)
 
+		#### render notes
 		for note in self.notes[::-1] : note.render(self.board)
 
 		frame.blit(self.board, (50, 0))

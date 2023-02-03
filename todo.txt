@@ -1,1 +1,1 @@
-pygame.transform.average_color()
+properly coment and clean up ur code
