@@ -10,12 +10,14 @@ import core
 class Game :
 	def __init__ (self) :
 		#### config
-		self.size, self.title = (600, 900), 'JPBB | V 1.0'
+		self.size, self.title = (600, 900), 'Just Press By Beat | V 1.0'
 		self.fps, self.timeMult = 60, 1
 
 		#### window
 		self.window = pg.display.set_mode(self.size)
 		self.clock  = pg.time.Clock()
+
+		pg.display.set_caption(self.title)
 
 		#### gameplay
 		self.state = 'song_menu'
@@ -37,7 +39,18 @@ class Game :
 
 		#### song selection menu
 		if self.state == 'song_menu' :
-			pass
+			currentSong = self.songs[self.selected]
+			bg = currentSong.bg.copy()
+			bg.set_alpha(50)
+
+			self.window.fill(currentSong.bgColor)
+			self.window.blit(pg.transform.scale(bg, (600, 1100)), (0, 0))
+
+			for y, song in enumerate(self.songs) :
+				self.window.blit(song.bannerDarkenLayer,
+					(200-2, (y * 150) + 386 - 2))
+				self.window.blit(song.banner,
+					(200-2, (y * 150) + 386 - 2))
 
 		#### plaing song
 		if self.state == 'playing_song' :
@@ -74,10 +87,12 @@ class Game :
 			if song != 'temp' :
 				self.songs.append(core.Song(song))
 
-		self.state = 'playing_song'
+		self.state = 'song_menu'
 		self.song = self.songs[0]
 
-		self.song.play()
+		#self.song.play()
+
+		self.selected = 0
 
 
 	def onExit (self) :

@@ -6,6 +6,8 @@ from .note import Note
 settings = loadFromINI('settings.ini')
 darkenBackground = float(settings['RENDER']['darken_background'])
 
+bigFont = pg.font.Font('font.ttf', 30)
+smallFont = pg.font.Font('font.ttf', 17)
 
 
 class Song :
@@ -21,6 +23,9 @@ class Song :
 
 		self.name = content['name']
 		self.song = content['song']
+		self.author = content['author']
+		self.difficulty = content['difficulty']
+
 		self.noteSpeed = content['speed']
 
 		self.icon = pg.image.load(f'{songPath}/icon.png').convert_alpha()
@@ -39,6 +44,29 @@ class Song :
 		darkenLayer = pg.Surface((500, 900))
 		darkenLayer.set_alpha((255 / 100) * darkenBackground)
 		self.bg.blit(darkenLayer, (0, 0))
+
+		#### song banner
+		# darken layer
+		self.banner = pg.Surface((426, 132))
+
+		self.bannerDarkenLayer = pg.Surface((426, 132))
+		self.bannerDarkenLayer.fill((0, 0, 0))
+		self.bannerDarkenLayer.set_alpha(128)
+
+		# banner outline
+		pg.draw.rect(self.banner, self.bgColor, (2, 2, 426, 128), 2)
+
+		# banner icon
+		self.banner.blit(self.icon, (2, 2))
+
+		# banner title & author
+		self.banner.blit(bigFont.render(self.name, 1, self.bgColor), (138, 10))
+		self.banner.blit(smallFont.render(f'by {self.author}', 1, self.bgColor), (138, 40))
+
+		# banner difficulty
+		self.banner.blit(smallFont.render('difficulty', 1, self.bgColor), (138, 75))
+
+		[pg.draw.circle(self.banner, self.bgColor, (128 + 10 + 8 + (20 * x), 112), 8) for x in range(self.difficulty)]
 
 		#### song
 		self.board = pg.Surface((500, 900))
